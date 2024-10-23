@@ -1,0 +1,104 @@
+[project]
+name = "Finndersen.atlas-project-template"
+description = "A project template for managing relational database schema migrations using the Atlas tool."
+authors = [
+    { name = "Finn Andersen" }
+]
+readme = "README.md"
+requires-python = ">=3.11, <3.13"
+dynamic = ["version"]
+
+dependencies = [
+    "sqlalchemy>=2.0,<3.0",
+    "atlas-provider-sqlalchemy>=0.2.2",
+    "aws-xray-sdk==2.14.0",
+    "requests==2.32.2",
+    "aws-embedded-metrics==3.2.0",
+    "aws-lambda-powertools==3.1.0",
+    "boto3==1.35.45"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pyright",
+    "cfn-lint",
+    "pytest",
+    "pytest-cov",
+    "pytest-dotenv",
+    "ruff",
+    "types-requests"
+]
+
+[project.urls]
+repository = "https://github.com/Finndersen/atlas-project-template.git"
+
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["tests*", "deployment*"]
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
+pythonpath = [
+    ".", "src",
+]
+env_files = [
+    "tests/.test.env"
+]
+env_override_existing_values = 1
+addopts = """\
+    --cov src \
+    --cov-fail-under 100 \
+    --cov-branch \
+    --cov-report term-missing \
+    --verbose
+    --import-mode=importlib
+"""
+
+[tool.pyright]
+include = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+src = ["src", "."]
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    "W",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+    # No implicit namespace packages
+    "INP001"
+]
+# A lot of rules are in preview, enabled for feature parity with flake8
+preview = true
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore `INP001` rule everywhere except for the `src/` and `tests/` directories.
+"!**/{src,tests}/**/*.py" = ["INP001"]
+# Ignore " Module level import not at top of file" in load_models.py
+"load_models.py" = ["E402"]
+
+[tool.coverage.report]
+exclude_also = [
+    "@(abc\\.)?abstractmethod",
+    "class .*\\bProtocol(\\[.*\\])?\\):",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
