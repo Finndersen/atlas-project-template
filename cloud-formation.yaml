@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+
+
+Resources:
+  # --------------Lambda Layer containing the Atlas binary --------------- #
+  AtlasLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      Description: Lambda layer to contain the Atlas binary for DB schema migration
+      ContentUri: atlas_layer
+      CompatibleRuntimes:
+        - python3.11
+
+  # --------------Schema Migration Lambda triggered by Custom Resource--------------- #
+  SchemaMigrationLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Lambda triggered by custom resource to run DB schema migrations
+      CodeUri: ../src/
+      Handler: migration_lambda.aws.lambda_handler
+      Runtime: python3.12
+      Layers:
+        - !Ref AtlasLayer
+      MemorySize: 256
+      Tracing: Active
+      AutoPublishAlias: live
+      Timeout: 900
+      Environment:
+        Variables:
+          DB_HOST: <SET VALUE>
+          DB_PORT: <SET VALUE>
+          DB_NAME: <SET VALUE>
+          DB_USER: <SET VALUE>
+      Policies:
+        - <ARN of policy for allowing RDS proxy connection>
+      VpcConfig:
+        SecurityGroupIds:
+          - <ID of security group to allow connection to DB>
+        SubnetIds: <List of subnet IDs that DB exists in>
+
+  # A custom resource which triggers the Lambda to run the schema migrations
+  MigrationTrigger:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt SchemaMigrationLambda.Arn
+      # 15 minute timeout to correspond with maximum Lambda duration
+      ServiceTimeout: 900
+      # When this value changes, it will cause an update to this custom resource and therefore cause migrations to run
+      MigrationHash: 4nvGDetTquWOLbWdaB18Y0gHLHRFasUXH52F06uhcSY=
+      ForceUpdate: 1  # Change this value to force apply migrations, even if the migration files have not changed
+
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${SchemaMigrationLambda}'
+      RetentionInDays: 30
