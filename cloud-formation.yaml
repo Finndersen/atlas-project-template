@@ -47,7 +47,7 @@ Resources:
       # 15 minute timeout to correspond with maximum Lambda duration
       ServiceTimeout: 900
       # When this value changes, it will cause an update to this custom resource and therefore cause migrations to run
-      MigrationHash: 4nvGDetTquWOLbWdaB18Y0gHLHRFasUXH52F06uhcSY=
+      MigrationHash: 4M4XVqDlARAEnO10mHon8QQh4yKV5rYIHk+OGarK5Qk=
       ForceUpdate: 1  # Change this value to force apply migrations, even if the migration files have not changed
 
   LambdaLogGroup:

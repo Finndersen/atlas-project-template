@@ -25,7 +25,12 @@ class Address(Base):
     __tablename__ = "addresses"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    email: Mapped[str] = mapped_column(String, nullable=False)
+    street_number: Mapped[int]
+    street_name: Mapped[str]
+    city: Mapped[str]
+    state: Mapped[str]
+    postal_code: Mapped[str]
+    country: Mapped[str]
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
     # Relationship back to User (many-to-one)
