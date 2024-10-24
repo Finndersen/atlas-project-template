@@ -11,6 +11,7 @@ lint:
 	@ruff check
 	@ruff format --check
 	@python -m pyright
+	@cfn-lint cloud-formation.yaml
 	@make check-migrations
 
 .PHONY: format
