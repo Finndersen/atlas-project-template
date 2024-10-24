@@ -62,4 +62,5 @@ If using AWS with the provided Lambda-backed custom resource, migrations will au
 ## Notes
 * Any other services or application code that needs to reference the DB schema (e.g. SQLAlchemy models) should be included within this same project, so that they are kept in sync and deployed together.
 * The mechanism for applying migrations (Lambda-backed custom resource) can be changed to suit your project needs, while retaining the commands used for local development and in CI.
+* Any additional AWS resources relating to this project/services should have a `DependsOn: DBSchemaMigration` set, so that they are only deployed after migrations have successfully completed. 
 
