@@ -1,6 +1,6 @@
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 
-from migration_lambda.dirs import MIRATIONS_DIR
+from migration_lambda.dirs import MIGRATIONS_DIR
 
 
 class MigrationHashMismatchError(Exception):
@@ -11,7 +11,7 @@ def get_atlas_hash_value() -> str:
     """
     Get the header hash value from the atlas.sum file
     """
-    atlas_sum_file = MIRATIONS_DIR / "atlas.sum"
+    atlas_sum_file = MIGRATIONS_DIR / "atlas.sum"
     with atlas_sum_file.open("rt") as f:
         return f.readline()[3:].strip()
 
