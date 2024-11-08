@@ -56,7 +56,7 @@ fi
 
 # Lint the most recent migration file and output any associated warnings
 # This will involve running the migrations against a temp dev DB,  so any SQL syntax errors will be caught here.
-atlas migrate lint --env project_config --dev-url "docker://postgres/15/test?search_path=public" --latest 1
+atlas migrate lint --env project_config --latest 1
 
 # Save the current state of the schema and migration files
 schema_and_migration_content > "$SCHEMA_MIGRATION_HASH_FILENAME"
