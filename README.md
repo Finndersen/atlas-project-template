@@ -13,6 +13,7 @@ Intended for use on a Mac or Linux development machine.
 * `check-migrations` command for validating schema & migration state & integrity, and showing migration-related warnings (can be used as a pre-commit hook and in CI)
 * AWS Lambda-backed custom resource for applying migrations upon CloudFormation stack deployment (With a custom parameter that causes the CR to only be triggered when migration state changes, and a Lambda Layer to contain the Atlas binary)
 * Automatically installs Atlas and a docker runtime for Mac machines ([colima](https://github.com/abiosoft/colima))
+* Pytest fixtures for managing a loca containerised PostgreSQL database for testing, and providing a SQLAlchemy session for tests
 
 ## Installation
 
