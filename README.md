@@ -18,7 +18,10 @@ Intended for use on a Mac or Linux development machine.
 
 Clone this repository, adapt it to your existing project if required.
 
-Run `make install` to install project dependencies.
+Run `make install` to install project dependencies, including:
+- Docker engine runtime (colima)
+- Atlas DB migration tool
+- Python project dependencies
 
 ## Usage
 ### Configure Database Schema Source
