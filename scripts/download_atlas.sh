@@ -3,10 +3,10 @@
 # Should be run from the project root directory, like ./scripts/download_atlas_binary.sh
 DESTINATION_DIR=$1
 mkdir -p "$DESTINATION_DIR"
-curl -o "$DESTINATION_DIR/atlas" https://release.ariga.io/atlas/atlas-linux-amd64-v0.28.0
+curl -o "$DESTINATION_DIR/atlas" https://release.ariga.io/atlas/atlas-linux-amd64-v0.28.2-0c6632d-canary
 chmod +x "$DESTINATION_DIR/atlas"
 
-expected_checksum="f43bd5eccedb2b719178aa132cdac0f3459039134368cf9e3aa3d0a4ca852f9b"
+expected_checksum="44156686ed235d34491b06117d63a2ae83981302b84f4f160537a85ec7928dd8"
 actual_checksum=$(sha256sum "$DESTINATION_DIR/atlas" | awk '{print $1}')
 
 if [ "$actual_checksum" != "$expected_checksum" ]; then
