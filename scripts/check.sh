@@ -58,5 +58,20 @@ fi
 # This will involve running the migrations against a temp dev DB,  so any SQL syntax errors will be caught here.
 atlas migrate lint --env project_config --latest 1
 
+# Verify that migration files involving modifying indexes CONCURRENTLY start with "-- atlas:txmode none" so they do not run in a transaction
+for file in "$MIGRATIONS_DIR"/*.sql; do
+  # Skip if no .sql files exist
+  [[ -e "$file" ]] || continue
+
+  # Check if the file contains the word "CONCURRENTLY"
+  if grep -q "CONCURRENTLY" "$file"; then
+    # Check if the first line starts with "-- atlas:txmode none"
+    if ! head -n 1 "$file" | grep -q "^-- atlas:txmode none"; then
+      echo "Error: Migration file '$file' must start '-- atlas:txmode none' because it involves modifying indexes CONCURRENTLY."
+      exit 1
+    fi
+  fi
+done
+
 # Save the current state of the schema and migration files
 schema_and_migration_content > "$SCHEMA_MIGRATION_HASH_FILENAME"
