@@ -5,8 +5,9 @@ from unittest import mock
 import pytest
 from aws_embedded_metrics.logger.metrics_logger_factory import create_metrics_logger
 from pytest import fixture
-from sqlalchemy import Connection, create_engine
+from sqlalchemy import Connection, Engine, create_engine
 from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import Session
 from testcontainers.postgres import PostgresContainer
 
 from db.models import Base
@@ -55,34 +56,43 @@ def mock_db_auth_token():
 
 
 @fixture(scope="session")
-def postgresql_db_container() -> PostgresContainer:
-    with PostgresContainer("postgres:16-alpine") as postgres:
-        yield postgres
+def db_engine() -> Engine:
+    """
+    Fixture which sets up a containerised PostgreSQL database for the entire test session,
+    and returns a SQLAlchemy engine for it.
+    """
+    with PostgresContainer("postgres:16-alpine", driver="psycopg") as postgres:
+        connection_url = postgres.get_connection_url()
+        # Set echo=True to see the SQL queries printed during testing
+        engine = create_engine(connection_url, echo=True)
+
+        # Verify that it is possible to connect to the container
+        # Occasionally the container port forwarding isn't ready yet, so wait some time and retry
+        # (colima issue, see https://github.com/abiosoft/colima/issues/71)
+        retries = 5
+        while True:
+            try:
+                with engine.connect():
+                    pass
+                break
+            except OperationalError:
+                print("Container connection failed, retrying...")
+                retries -= 1
+                if retries == 0:
+                    raise
+                time.sleep(1)
+
+        yield engine
 
 
 @fixture(scope="session")
-def db_connection(postgresql_db_container: PostgresContainer) -> Connection:
+def db_connection(db_engine: Engine) -> Connection:
     """
     Fixture to provide a SQLAlchemy connection for the containerised database.
     This connection is re-used for the entire test session.
     """
-    connection_url = postgresql_db_container.get_connection_url()
-    engine = create_engine(connection_url)
-
-    retries = 5
-    while True:
-        try:
-            with engine.connect() as connection:
-                yield connection
-            break
-        except OperationalError:
-            print("Container connection failed, retrying...")
-            # Occasionally the container port forwarding isn't ready yet, so wait some time and retry
-            # (colima issue, see https://github.com/abiosoft/colima/issues/71)
-            retries -= 1
-            if retries == 0:
-                raise
-            time.sleep(1)
+    with db_engine.connect() as connection:
+        yield connection
 
 
 @fixture(scope="session")
@@ -112,3 +122,12 @@ def db_session_maker(db_connection: Connection, db_tables) -> DBSessionMaker:
         yield session_maker
         # Rollback transaction so that each test is isolated
         transaction.rollback()
+
+
+@fixture()
+def db_session(db_session_maker: DBSessionMaker) -> Session:
+    """
+    Provides a SQLAlchemy DB session with an open transaction
+    """
+    with db_session_maker.begin() as session:
+        yield session
