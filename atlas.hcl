@@ -16,6 +16,13 @@ env "project_config" {
       diff = "{{ sql . \"  \" }}"
     }
   }
+  diff {
+    // Set indexes to be managed concurrently as this is not default behaviour
+    concurrent_index {
+      add  = true
+      drop = true
+    }
+  }
 }
 
 lint {
