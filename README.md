@@ -95,6 +95,12 @@ sam deploy --template-file cloud-formation.yaml
 
 If using AWS with the provided Lambda-backed custom resource, migrations will automatically be applied when the SAM template is deployed. The Lambda logs will contain details of the outcome.
 
+To manually apply migrations in other contexts, run:
+
+```bash
+atlas migrate apply -u <DB_CONNECTION_STRING> --dir file://src/db/migrations/
+```
+
 ## Notes
 * Uses the Atlas [versioned workflow](https://atlasgo.io/versioned/intro) for migrations, and only free features (no Atlas Cloud).
 * Any other services or application code that needs to reference the DB schema (e.g. SQLAlchemy models) should be included within this same project, so that they are kept in sync and deployed together.
