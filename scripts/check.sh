@@ -8,8 +8,9 @@ SCHEMA_MIGRATION_HASH_FILENAME=".schema_and_migration_hash"
 set -e
 
 function schema_and_migration_content() {
-  # Get the DB schema combined with the hash of the Atlas migration files
-  echo "$(python scripts/load_models.py; cat "$MIGRATIONS_DIR/atlas.sum")" | sha256sum
+  # Get the hashed content of DB schema combined with the hash of the Atlas migration files
+  # Sort the schema DDL output since the order of CREATE INDEX statements is not deterministic
+  echo "$(python scripts/load_models.py | sort; find "$MIGRATIONS_DIR" -type f -exec sha256sum {} + | sort)" | sha256sum
 }
 
 function has_schema_or_migrations_changed() {
@@ -37,8 +38,6 @@ function verify_cfn_cr_migration_hash() {
   fi
 }
 
-# Verify hash integrity of migration files
-atlas migrate validate --env project_config
 # Verify that the MigrationHash parameter of the MigrationTrigger custom resource in the CF template is equal to migration hash
 verify_cfn_cr_migration_hash
 
@@ -47,6 +46,9 @@ if ! has_schema_or_migrations_changed; then
   echo "No schema changes detected"
   exit 0
 fi
+
+# Verify hash integrity of migration files
+atlas migrate validate --env project_config
 
 # Check if schema and migration files are in sync
 if [[ $(atlas schema diff --env "project_config" --from "file://$MIGRATIONS_DIR" --to "env://src") != "Schemas are synced, no changes to be made." ]]; then
