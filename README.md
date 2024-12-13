@@ -56,18 +56,17 @@ Use the `db_session_maker` fixture in your tests to get a SQLAlchemy session mak
 
 Example usage:
 ```python
-def test_my_function_that_needs_a_session(db_session_maker):
-    with db_session_maker.begin() as session:
-        # Set up test data in the DB
-        ...
-        session.flush()
-    
-        # Test your function that requires a SQLAlchemy session
-        result = my_function(session)
-        session.flush()
-        
-        # Verify state of the DB after the function has run
-        ...
+def test_my_function_that_needs_a_session(db_session: Session):
+      # Set up test data in the DB
+      ...
+      db_session.flush()
+  
+      # Test your function that requires a SQLAlchemy session
+      result = my_function(db_session)
+      db_session.flush()
+      
+      # Verify state of the DB after the function has run
+      ...
 
 def test_my_function_that_needs_a_session_maker(db_session_maker):
     with db_session_maker.begin() as session:
